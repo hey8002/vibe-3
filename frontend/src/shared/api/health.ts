@@ -1,4 +1,5 @@
 import type { HealthCheckResult } from "../types";
+import { apiUrl, getApiBaseUrl } from "./base";
 
 type ApiHealthResponse = {
   status: string;
@@ -8,17 +9,20 @@ type ApiHealthResponse = {
 };
 
 export async function checkBackendHealth(): Promise<HealthCheckResult> {
-  return requestHealth("/api/health", "FastAPI 서버 응답 확인 완료");
+  return requestHealth(apiUrl("/health"), "FastAPI 서버 응답 확인 완료");
 }
 
 export async function checkDatabaseHealth(): Promise<HealthCheckResult> {
-  return requestHealth("/api/db/health", "SQLite 연결 확인 완료");
+  return requestHealth(apiUrl("/db/health"), "SQLite 연결 확인 완료");
 }
 
-async function requestHealth(
-  path: string,
-  successMessage: string,
-): Promise<HealthCheckResult> {
+export async function testBackendConnection(baseUrl?: string): Promise<HealthCheckResult> {
+  const normalizedBase = baseUrl?.trim() ? baseUrl.trim().replace(/\/$/, "") : getApiBaseUrl();
+  const target = `${normalizedBase}/health`;
+  return requestHealth(target, "백엔드 연결 확인 완료");
+}
+
+async function requestHealth(path: string, successMessage: string): Promise<HealthCheckResult> {
   try {
     const response = await fetch(path);
 

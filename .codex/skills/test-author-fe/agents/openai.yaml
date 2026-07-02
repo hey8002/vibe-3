@@ -1,0 +1,7 @@
+interface:
+  display_name: "FE 테스트 작성"
+  short_description: "React + TypeScript + Vite FE 테스트를 작성하고 실행"
+  default_prompt: "Use $test-author-fe to write and run FE tests, then summarize the results in a table."
+
+policy:
+  allow_implicit_invocation: false

@@ -9,11 +9,15 @@ backend/__pycache__/
 backend/**/__pycache__/
 backend/**/*.py[cod]
 backend/data/*.db
+backend/data/*.xlsx
+backend/data/uploads/
+backend/data/outputs/
 backend/uploads/
 
 # uv
 .uv-cache/
 uv.lock
+.venv/
 
 # Environment
 .env

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { checkBackendHealth, checkDatabaseHealth } from "../shared/api/health";
+import { clearApiBaseUrl, getApiBaseUrl, setApiBaseUrl } from "../shared/api/base";
 import type { HealthCheckResult, PageKey } from "../shared/types";
 import { ChatbotPage } from "../pages/ChatbotPage";
 import { ExcelPage } from "../pages/ExcelPage";
@@ -17,6 +18,7 @@ const pages: Array<{ key: PageKey; label: string }> = [
 
 export default function App() {
   const [activePage, setActivePage] = useState<PageKey>("home");
+  const [backendBaseUrl, setBackendBaseUrl] = useState(() => getApiBaseUrl());
   const [backendHealth, setBackendHealth] = useState<HealthCheckResult>({
     status: "checking",
   });
@@ -40,6 +42,16 @@ export default function App() {
   useEffect(() => {
     void refreshHealthChecks();
   }, []);
+
+  function handleSaveBackendBaseUrl(value: string) {
+    if (!value.trim()) {
+      clearApiBaseUrl();
+      setBackendBaseUrl("/api");
+      return;
+    }
+    setApiBaseUrl(value);
+    setBackendBaseUrl(value.trim().replace(/\/$/, ""));
+  }
 
   return (
     <div className="shell">
@@ -66,6 +78,8 @@ export default function App() {
             backendHealth={backendHealth}
             databaseHealth={databaseHealth}
             onRefresh={refreshHealthChecks}
+            backendBaseUrl={backendBaseUrl}
+            onChangeBackendBaseUrl={handleSaveBackendBaseUrl}
           />
         )}
         {activePage === "schedule" && <SchedulePage />}
