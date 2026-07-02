@@ -7,6 +7,7 @@ import {
   type ChatbotAnswerResult,
   type ChatbotDocument,
 } from "../shared/api/chatbot";
+import { getApiBaseUrl } from "../shared/api/base";
 
 type Message = {
   role: "user" | "assistant";
@@ -45,9 +46,31 @@ export function ChatbotPage() {
     setBusy("upload");
     setStatus("업로드 중...");
     try {
-      await uploadChatbotDocument(selectedFile);
-      setStatus("업로드 완료. 학습을 실행하세요.");
-      await refreshDocuments();
+      const result = await uploadChatbotDocument(selectedFile);
+      setSelectedDocumentId(result.document_id);
+      setSelectedFile(null);
+      setStatus(`업로드 완료: ${result.filename}. 문서 목록을 갱신하는 중입니다.`);
+      try {
+        await refreshDocuments();
+        setStatus(`업로드 완료: ${result.filename}. 학습을 실행하세요.`);
+      } catch (refreshError) {
+        setDocuments((current) => [
+          {
+            document_id: result.document_id,
+            filename: result.filename,
+            file_type: result.file_type,
+            status: result.status,
+            created_at: new Date().toISOString(),
+            chunk_count: 0,
+          },
+          ...current,
+        ]);
+        setStatus(
+          refreshError instanceof Error
+            ? `업로드는 완료됐지만 문서 목록 갱신에 실패했습니다: ${refreshError.message}`
+            : "업로드는 완료됐지만 문서 목록 갱신에 실패했습니다.",
+        );
+      }
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "업로드 실패");
     } finally {
@@ -112,9 +135,13 @@ export function ChatbotPage() {
       <div className="card-grid">
         <article className="card">
           <h3>1. 학습 데이터 업로드</h3>
+          <p>연결 API: {getApiBaseUrl()}</p>
           <input
             accept=".txt,.md,.html,.htm,.csv,.xlsx,.pdf"
-            onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
+            onChange={(event) => {
+              setSelectedFile(event.target.files?.[0] ?? null);
+              setStatus("파일을 선택했습니다. 업로드 버튼을 누르세요.");
+            }}
             type="file"
           />
           <button disabled={busy !== "idle"} onClick={handleUpload} type="button">
