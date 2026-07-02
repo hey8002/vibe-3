@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
 from app.api.routes import chatbot, excel, health, news, schedules
 
